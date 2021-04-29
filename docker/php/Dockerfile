@@ -9,16 +9,12 @@ RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-av
   && a2enmod headers
 
 # php config
-
-
-
 RUN apt update \
   && apt install -y libicu-dev autoconf make g++ gcc apt-utils git zip unzip wget \
   && apt install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev libonig-dev \
-  && docker-php-ext-configure gd --with-freetype --with-jpeg \
-  && docker-php-ext-install -j$(nproc) pdo_mysql mysqli gd iconv intl opcache exif \
+  && docker-php-ext-install -j$(nproc) pdo_mysql mysqli gd iconv intl opcache \
   && pecl install xdebug \
-  && docker-php-ext-enable xdebug opcache exif \
+  && docker-php-ext-enable xdebug opcache \
   && apt upgrade -y \
   && apt autoremove -y \
   && apt clean -y

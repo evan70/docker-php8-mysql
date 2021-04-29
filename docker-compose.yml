@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   php-apache:
     build: ./docker/php
     volumes:
@@ -11,5 +12,3 @@ services:
     environment:
       - TZ=${TZ}
     tty: true
-
-

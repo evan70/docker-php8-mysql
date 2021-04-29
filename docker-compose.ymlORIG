@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - mysql-store:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${TZ}
+    ports:
+      - ${MYSQL_PORT}:3306
+
+  mysql-test:
+    image: mysql:8.0
+    volumes:
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    tmpfs:
+      - /var/lib/mysql
+      - /var/log/mysql
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${TZ}
+
+  phpmyadmin:
+    depends_on:
+      - mysql
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+    ports:
+      - "9080:80"
+
+  php-apache:
+    build: ./docker/php
+    volumes:
+      - ./html:/var/www/html
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - TZ=${TZ}
+    depends_on:
+      - mysql
+    tty: true
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      - MH_STORAGE=maildir
+      - MH_MAILDIR_PATH=/tmp
+      - MAIL_DRIVER=smtp
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=user
+      - MAIL_PASSWORD=password
+      - MAIL_ENCRYPTION=null
+      - DOMAINS='localhost -> http://host.docker.internal:8080'
+    volumes:
+      - ./logs/mailhog:/tmp
+
+volumes:
+    mysql-store: {}
